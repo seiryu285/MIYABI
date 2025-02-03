@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MIYABI - Japanese Art NFT Collection | Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500&display=swap" rel="stylesheet">
+  <style>
+    /* 共通リセット */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: "Yu Mincho", "YuMincho", serif;
+      background-color: #ffffff;
+      overflow-x: hidden;
+    }
+    /* ナビゲーション（ホームページ用：言語切替＋VIEW GALLERYのみ） */
+    .nav {
+      position: fixed;
+      top: 30px;
+      right: 50px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    .nav a:hover {
+      color: #FFD700;
+    }
+    .nav .lang-select {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-family: 'Rajdhani', sans-serif;
+      cursor: pointer;
+    }
+    /* Heroセクション */
+    .hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url('assets/miyabi-background.jpg') center/cover no-repeat;
+      position: relative;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: white;
+    }
+    .hero-content h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+    }
+    .hero-content p {
+      font-size: 1.2em;
+      margin-bottom: 40px;
+    }
+    .hero-content a {
+      display: inline-block;
+      padding: 15px 40px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      text-decoration: none;
+      font-size: 1.2em;
+      border-radius: 3px;
+      transition: all 0.3s ease;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    .hero-content a:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-3px);
+    }
+    @media (max-width: 768px) {
+      .nav {
+        right: 20px;
+        top: 20px;
+        gap: 15px;
+      }
+      .hero-content h1 {
+        font-size: 2.5em;
+      }
+      .hero-content p {
+        font-size: 1em;
+      }
+      .hero-content a {
+        padding: 12px 30px;
+        font-size: 1em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ナビゲーション（ホームページ用） -->
+  <nav class="nav">
+    <select class="lang-select">
+      <option value="ja">JP</option>
+      <option value="en">EN</option>
+    </select>
+    <a href="gallery.html" class="gallery-link" data-translate="gallery">VIEW GALLERY</a>
+  </nav>
+
+  <!-- Heroセクション -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 data-translate="gallery">MIYABI</h1>
+      <p>Japanese Art NFT Collection</p>
+      <a href="gallery.html" data-translate="gallery">VIEW GALLERY</a>
+    </div>
+  </section>
+
+  <!-- 必要に応じてその他ホームページ用コンテンツをここに追加 -->
+  <script>
+    // 言語切替の簡易例（必要に応じて詳細な処理を実装してください）
+    document.addEventListener('DOMContentLoaded', function() {
+      const langSelect = document.querySelector('.lang-select');
+      langSelect.addEventListener('change', (e) => {
+        console.log('Language changed to:', e.target.value);
+        // ここにテキストの切替処理を追加可能
+      });
+    });
+  </script>
+</body>
+</html>

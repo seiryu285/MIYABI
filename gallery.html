@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MIYABI - Japanese Art NFT Collection | Gallery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500&display=swap" rel="stylesheet">
+  <style>
+    /* 共通リセット */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: "Yu Mincho", "YuMincho", serif;
+      background-color: #ffffff;
+      overflow-x: hidden;
+    }
+    /* ナビゲーション（ギャラリーページ用） */
+    .nav {
+      position: fixed;
+      top: 30px;
+      right: 50px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    .nav a:hover {
+      color: #FFD700;
+    }
+    .nav .lang-select {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-family: 'Rajdhani', sans-serif;
+      cursor: pointer;
+    }
+    .nav .connect-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-family: 'Rajdhani', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .nav .connect-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    /* ABOUTリンクも残す */
+    /* ギャラリーコンテナ */
+    .gallery-container {
+      padding: 2rem;
+      margin-top: 140px;
+      background-color: #ffffff;
+    }
+    .gallery-header {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .search-box {
+      position: relative;
+      max-width: 320px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      padding-right: 2.5rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-family: inherit;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #FFB7C5;
+    }
+    .search-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      pointer-events: none;
+    }
+    .tab-container {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .tab-btn {
+      padding: 4px 8px;
+      background: transparent;
+      border: 1px solid #FFB7C5;
+      color: #FFB7C5;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 500;
+      font-size: 0.75rem;
+      transition: all 0.3s ease;
+    }
+    .tab-btn.active {
+      background: #FFB7C5;
+      color: #000;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .gallery-item {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .gallery-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+    .gallery-item-number {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.875rem;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      z-index: 2;
+    }
+    /* NFT詳細モーダル */
+    .nft-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+    /* オーバーレイ（従来の暗いオーバーレイ） */
+    .nft-modal::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: -1;
+    }
+    /* モーダル背景（画像から取得した背景色を適用） */
+    .modal-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      transition: background-color 0.3s ease;
+      z-index: -2;
+    }
+    /* モバイル用オーバーレイ：画像背景色で全画面を覆う */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      display: none;
+    }
+    @media (max-width: 768px) {
+      .modal-overlay {
+        display: block;
+      }
+    }
+    .nft-modal.active {
+      opacity: 1;
+      display: flex;
+    }
+    .modal-content {
+      position: relative;
+      width: 95%;
+      max-width: 1400px;
+      height: 90vh;
+      display: flex;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 24px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    /* Closeボタン：背景・枠を削除し×印のみ */
+    .modal-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: transparent;
+      border: none;
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.3s ease;
+      z-index: 100;
+      padding: 0;
+      line-height: 1;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .modal-close:hover {
+        color: #FFD700;
+      }
+    }
+    .modal-inner {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      gap: 2rem;
+      padding: 1.5rem;
+    }
+    .modal-image {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-height: 100%;
+      padding: 1rem;
+    }
+    .modal-image img {
+      max-width: 100%;
+      max-height: 85vh;
+      object-fit: contain;
+      border-radius: 16px;
+    }
+    .modal-info {
+      width: 400px;
+      height: 100%;
+      padding: 1.5rem;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .collection-row {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
+      margin-bottom: 0.75rem;
+    }
+    .modal-title {
+      font-size: 2rem;
+      line-height: 1.3;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .modal-description {
+      line-height: 1.8;
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.9);
+      white-space: pre-line;
+      margin-bottom: 2rem;
+    }
+    .modal-traits {
+      margin-bottom: 2rem;
+    }
+    .modal-traits h3 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .trait-item {
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+    .trait-type {
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .modal-details {
+      font-size: 1rem;
+    }
+    .detail-item {
+      margin-bottom: 0.75rem;
+    }
+    .detail-label {
+      opacity: 0.8;
+    }
+    /* スクロールバーのカスタマイズ */
+    .modal-info::-webkit-scrollbar {
+      width: 8px;
+    }
+    .modal-info::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    .modal-info::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+    .modal-info::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    @media (max-width: 1024px) {
+      .modal-inner {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      .modal-info {
+        width: 100%;
+        max-height: 50vh;
+      }
+      .modal-image {
+        padding: 0;
+      }
+      .modal-image img {
+        max-height: 40vh;
+      }
+      .modal-title {
+        font-size: 1.75rem;
+      }
+      .modal-description {
+        font-size: 1rem;
+      }
+    }
+    @media (max-width: 768px) {
+      .nav {
+        right: 20px;
+        top: 20px;
+        gap: 15px;
+      }
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+      .nft-modal {
+        padding: 1rem;
+      }
+      .modal-content {
+        height: 100vh;
+        width: 100vw;
+        border-radius: 0;
+      }
+      .modal-inner {
+        padding: 1rem;
+        gap: 1rem;
+      }
+      .modal-close {
+        top: 1rem;
+        right: 1rem;
+        width: 36px;
+        height: 36px;
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ナビゲーション（ギャラリーページ用） -->
+  <nav class="nav">
+    <select class="lang-select">
+      <option value="ja">JP</option>
+      <option value="en">EN</option>
+    </select>
+    <button class="connect-btn" data-translate="connectWallet">CONNECT</button>
+    <a href="gallery.html" class="gallery-link" data-translate="gallery">VIEW GALLERY</a>
+    <a href="about.html" data-translate="about">ABOUT</a>
+  </nav>
+
+  <!-- ギャラリーコンテナ -->
+  <div class="gallery-container">
+    <div class="gallery-header">
+      <div class="search-box">
+        <input type="text" placeholder="名前または番号で検索..." class="search-input">
+        <span class="search-icon">🔍</span>
+      </div>
+      <div class="tab-container">
+        <button class="tab-btn active" data-tab="all" data-translate="ui.all">すべて</button>
+        <button class="tab-btn" data-tab="recent" data-translate="ui.recent">新着</button>
+        <button class="tab-btn" data-tab="popular" data-translate="ui.popular">人気</button>
+        <button class="tab-btn" data-tab="trending" data-translate="ui.trending">トレンド</button>
+      </div>
+    </div>
+    <div class="gallery-grid">
+      <!-- NFTアイテムはJSで生成 -->
+    </div>
+  </div>
+
+  <!-- NFT詳細モーダル -->
+  <div class="nft-modal" id="nftModal">
+    <!-- モバイル用オーバーレイ：画像背景色が全面に反映 -->
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-background"></div>
+      <button class="modal-close">×</button>
+      <div class="modal-inner">
+        <div class="modal-image">
+          <img id="modalImage" src="" alt="NFT Detail">
+        </div>
+        <div class="modal-info">
+          <div class="modal-header">
+            <div class="collection-row">
+              <span class="collection-label" id="modalCollection"></span>
+              <span id="modalNumber"></span>
+            </div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+          </div>
+          <div class="modal-description" id="modalDescription"></div>
+          <div class="modal-traits" id="modalTraits"></div>
+          <div class="modal-details">
+            <div class="detail-item">
+              <span class="detail-label">スタイル:</span>
+              <span class="detail-value" id="modalStyle"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">制作技法:</span>
+              <span class="detail-value" id="modalMethod"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">装飾:</span>
+              <span class="detail-value" id="modalAccessory"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Web3ライブラリ読み込み -->
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+  <!-- Color Thiefライブラリ読み込み -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // NFTデータの定義
+      const nftData = [
+          {
+              id: 1,
+              title: "蒼波 - 波紋の継承者 NFT #1",
+              description: `古都・鎌倉の染織師の家系に生まれた蒼波は、代々受け継がれる「絞り染め」の技を持つ青年アーティスト。
+静かな湖のように落ち着いた雰囲気を持ちながらも、時に大きな波を巻き起こすような情熱を秘めている。
+幼い頃から祖父母の工房で染めの技術とともに「波」という存在の意味を学び、その教えを胸に「動く波」となることを決意。
+現在は東京を拠点に、デジタルアートと伝統染織の融合を目指し、波紋のような作品を生み出し続けている。
+彼が身に纏う着物は、デジタルアートと手染めの技法が融合した唯一無二の一着。
+その波模様には、伝統と革新の間で揺れ動く彼の生き様が表現されている。
+「ただ古いものを守るのではなく、そこに新しい風を吹き込むこと」
+それこそが、彼の信じる道。彼の作品は、波紋のようにじわじわと世界に広がりつつある。
+四字熟語「温故知新」は、まさに彼の生き方そのものを表している。`,
+              image: "assets/nft1.jpg",
+              style: "現代絞り染め",
+              method: "デジタル描画・絞り染め融合",
+              accessory: "波模様の着物",
+              collection: "MIYABI",
+              traits: {
+                  personality: "静謐・情熱・完璧主義",
+                  specialty: "伝統とデジタルの融合",
+                  origin: "鎌倉",
+                  currentBase: "東京",
+                  fourCharacterIdiom: "温故知新"
+              }
+          },
+          {
+              id: 2,
+              title: "MIYABI #002",
+              description: "現代的なアレンジを加えた着物デザイン",
+              image: "assets/nft2.jpg",
+              style: "モダン",
+              method: "デジタル描画",
+              accessory: "簪"
+          },
+          {
+              id: 3,
+              title: "MIYABI #003",
+              description: "四季の美しさを表現した着物アート",
+              image: "assets/nft3.jpg",
+              style: "季節",
+              method: "デジタル描画",
+              accessory: "花"
+          }
+      ];
+      // 追加データ（ID 4～20）
+      for (let i = 4; i <= 20; i++) {
+          nftData.push({
+              id: i,
+              title: `MIYABI #${i.toString().padStart(4, '0')}`,
+              description: "日本の伝統美をモダンに解釈したデジタルアート",
+              image: `assets/nft${i}.jpg`,
+              style: i % 2 === 0 ? "モダン" : "古典",
+              method: "デジタル描画",
+              accessory: ["扇子", "簪", "花", "刀", "和傘"][i % 5]
+          });
+      }
+      // 翻訳データと初期状態
+      let currentLang = document.querySelector('.lang-select') ? document.querySelector('.lang-select').value : 'ja';
+      const translations = {
+          ja: {
+              gallery: 'ギャラリー',
+              collection: 'コレクション',
+              about: 'について',
+              search: '名前または番号で検索...',
+              filters: 'フィルター',
+              artist: 'アーティスト',
+              creationDate: '制作日',
+              connectWallet: 'ウォレット接続',
+              ui: {
+                  gallery: "ギャラリー",
+                  collection: "コレクション",
+                  about: "概要",
+                  all: "すべて",
+                  recent: "新着",
+                  popular: "人気",
+                  trending: "トレンド",
+                  filter: "フィルター",
+                  clear: "クリア",
+                  style: "着物スタイル",
+                  pattern: "模様",
+                  technique: "制作技法",
+                  color: "色彩",
+                  material: "素材",
+                  era: "時代背景",
+                  traditionalTechnique: "伝統技法",
+                  digitalTechnique: "デジタル技法",
+                  close: "閉じる",
+                  decoration: "装飾",
+                  catEars: "猫耳",
+                  frogDecoration: "蛙装飾",
+                  kimono: "着物",
+                  yukata: "浴衣",
+                  hakama: "袴"
+              },
+              nfts: {
+                  1: {
+                      title: "蒼波 - 波紋の継承者 NFT #1",
+                      description: `古都・鎌倉の染織師の家系に生まれた蒼波は、代々受け継がれる「絞り染め」の技を持つ青年アーティスト。
+静かな湖のように落ち着いた雰囲気を持ちながらも、時に大きな波を巻き起こすような情熱を秘めている。`,
+                      traits: {
+                          style: "現代絞り染め",
+                          pattern: "波紋",
+                          technique: "デジタル描画・絞り染め融合",
+                          color: "藍色グラデーション",
+                          material: "正絹"
+                      }
+                  }
+              }
+          },
+          en: {
+              gallery: 'Gallery',
+              collection: 'Collection',
+              about: 'About',
+              search: 'Search by name or number...',
+              filters: 'Filters',
+              artist: 'Artist',
+              creationDate: 'Creation Date',
+              connectWallet: 'Connect Wallet',
+              ui: {
+                  gallery: "Gallery",
+                  collection: "Collection",
+                  about: "About",
+                  all: "All",
+                  recent: "Recent",
+                  popular: "Popular",
+                  trending: "Trending",
+                  filter: "Filter",
+                  clear: "Clear",
+                  style: "Kimono Style",
+                  pattern: "Pattern",
+                  technique: "Technique",
+                  color: "Color",
+                  material: "Material",
+                  era: "Era",
+                  traditionalTechnique: "Traditional Technique",
+                  digitalTechnique: "Digital Technique",
+                  close: "Close",
+                  decoration: "Decoration",
+                  catEars: "Cat Ears",
+                  frogDecoration: "Frog Decoration",
+                  kimono: "Kimono",
+                  yukata: "Yukata",
+                  hakama: "Hakama"
+              },
+              nfts: {
+                  1: {
+                      title: "Blue Wave - The Ripple Inheritor NFT #1",
+                      description: `A young artist born into a family of textile artisans in the ancient capital of Kamakura,
+possessing the inherited technique of "shibori" dyeing passed down through generations.`,
+                      traits: {
+                          style: "Modern Shibori",
+                          pattern: "Ripple",
+                          technique: "Digital Drawing & Shibori Fusion",
+                          color: "Indigo Gradation",
+                          material: "Pure Silk"
+                      }
+                  }
+              }
+          }
+      };
+      function openModal(nft) {
+          const modal = document.getElementById('nftModal');
+          if (!modal) return;
+          const modalImg = document.getElementById('modalImage');
+          modalImg.src = nft.image;
+          modalImg.alt = nft.title;
+          const modalCollectionElem = document.getElementById('modalCollection');
+          const modalNumberElem = document.getElementById('modalNumber');
+          if (modalCollectionElem) {
+              modalCollectionElem.textContent = nft.collection ? nft.collection.toUpperCase() : 'MIYABI';
+          }
+          if (modalNumberElem) {
+              modalNumberElem.textContent = `#${String(nft.id).padStart(4, '0')}`;
+          }
+          document.getElementById('modalTitle').textContent = nft.title;
+          document.getElementById('modalDescription').textContent = nft.description;
+          document.getElementById('modalStyle').textContent = nft.style || '';
+          document.getElementById('modalMethod').textContent = nft.method || '';
+          document.getElementById('modalAccessory').textContent = nft.accessory || '';
+          updateTraits(nft);
+          modalImg.onload = function() {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              canvas.width = modalImg.width;
+              canvas.height = modalImg.height;
+              ctx.drawImage(modalImg, 0, 0);
+              const imageData = ctx.getImageData(0, 0, 1, 1).data;
+              const bgColor = `rgb(${imageData[0]}, ${imageData[1]}, ${imageData[2]})`;
+              const modalBg = document.querySelector('.modal-background');
+              if (modalBg) {
+                  modalBg.style.backgroundColor = bgColor;
+              }
+              // モバイルの場合、modal-overlayにも背景色を適用
+              if (window.innerWidth <= 768) {
+                  const modalOverlay = document.querySelector('.modal-overlay');
+                  if (modalOverlay) {
+                      modalOverlay.style.backgroundColor = bgColor;
+                  }
+              }
+          };
+          modal.style.display = 'flex';
+          setTimeout(() => { modal.classList.add('active'); }, 10);
+          document.body.style.overflow = 'hidden';
+          setupModalEventListeners(modal);
+      }
+      function updateTraits(nft) {
+          const modalTraits = document.getElementById('modalTraits');
+          if (modalTraits && nft.traits) {
+              let traitsHTML = '<h3>特性</h3><div class="trait-list">';
+              Object.entries(nft.traits).forEach(([key, value]) => {
+                  traitsHTML += `
+                      <div class="trait-item">
+                          <span class="trait-type">${getTraitLabel(key)}:</span>
+                          <span class="trait-value">${value}</span>
+                      </div>`;
+              });
+              traitsHTML += '</div>';
+              modalTraits.innerHTML = traitsHTML;
+          } else if (modalTraits) {
+              modalTraits.innerHTML = '';
+          }
+      }
+      function getTraitLabel(key) {
+          const labels = {
+              personality: '性格',
+              specialty: '専門',
+              origin: '出身',
+              currentBase: '活動拠点',
+              fourCharacterIdiom: '四字熟語'
+          };
+          return labels[key] || key;
+      }
+      function setupModalEventListeners(modal) {
+          const closeButton = modal.querySelector('.modal-close');
+          if (closeButton) {
+              closeButton.addEventListener('touchstart', (e) => {
+                  e.preventDefault();
+              });
+              closeButton.addEventListener('touchend', (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  closeModal();
+              });
+              closeButton.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  closeModal();
+              });
+          }
+          modal.addEventListener('click', (e) => {
+              if (e.target === modal) {
+                  closeModal();
+              }
+          });
+          const escHandler = (e) => {
+              if (e.key === 'Escape') {
+                  closeModal();
+              }
+          };
+          document.addEventListener('keydown', escHandler);
+          modal._escHandler = escHandler;
+      }
+      function closeModal() {
+          const modal = document.getElementById('nftModal');
+          if (!modal) return;
+          if (modal._escHandler) {
+              document.removeEventListener('keydown', modal._escHandler);
+              delete modal._escHandler;
+          }
+          modal.classList.remove('active');
+          setTimeout(() => {
+              modal.style.display = 'none';
+              document.body.style.overflow = '';
+          }, 300);
+      }
+      function populateGallery() {
+          const galleryGrid = document.querySelector('.gallery-grid');
+          if (!galleryGrid) return;
+          galleryGrid.innerHTML = '';
+          nftData.forEach(nft => {
+              const item = createGalleryItem(nft);
+              galleryGrid.appendChild(item);
+          });
+      }
+      function createGalleryItem(nft) {
+          const item = document.createElement('div');
+          item.className = 'gallery-item';
+          item.dataset.number = `#${String(nft.id).padStart(4, '0')}`;
+          item.dataset.title = nft.title;
+          const numberDiv = document.createElement('div');
+          numberDiv.className = 'gallery-item-number';
+          numberDiv.textContent = item.dataset.number;
+          const img = document.createElement('img');
+          img.src = nft.image;
+          img.alt = nft.title;
+          img.loading = 'lazy';
+          img.onerror = function() {
+              this.src = 'assets/placeholder.jpg';
+          };
+          item.appendChild(numberDiv);
+          item.appendChild(img);
+          item.addEventListener('click', () => {
+              openModal(nft);
+          });
+          return item;
+      }
+      function initializeTabs() {
+          const tabButtons = document.querySelectorAll('.tab-btn');
+          tabButtons.forEach(button => {
+              button.addEventListener('click', function() {
+                  tabButtons.forEach(btn => btn.classList.remove('active'));
+                  this.classList.add('active');
+                  const tabType = this.dataset.tab;
+                  let filteredNFTs = nftData;
+                  switch(tabType) {
+                      case 'recent':
+                          filteredNFTs = nftData.slice(-5);
+                          break;
+                      case 'popular':
+                          // 人気順のロジックがあれば実装
+                          break;
+                      case 'trending':
+                          // トレンド順のロジックがあれば実装
+                          break;
+                      case 'all':
+                      default:
+                          filteredNFTs = nftData;
+                          break;
+                  }
+                  displayNFTs(filteredNFTs);
+              });
+          });
+      }
+      function initializeSearch() {
+          const searchInput = document.querySelector('.search-input');
+          if (!searchInput) return;
+          searchInput.addEventListener('input', function(e) {
+              const searchTerm = e.target.value.toLowerCase();
+              const filteredNFTs = nftData.filter(nft =>
+                  nft.title.toLowerCase().includes(searchTerm) ||
+                  String(nft.id).padStart(4, '0').includes(searchTerm)
+              );
+              displayNFTs(filteredNFTs);
+          });
+      }
+      function displayNFTs(nftsToDisplay = nftData) {
+          const galleryGrid = document.querySelector('.gallery-grid');
+          if (!galleryGrid) return;
+          galleryGrid.innerHTML = '';
+          nftsToDisplay.forEach(nft => {
+              const item = createGalleryItem(nft);
+              galleryGrid.appendChild(item);
+          });
+      }
+      async function initializeWeb3() {
+          if (typeof window.ethereum !== 'undefined') {
+              window.web3 = new Web3(window.ethereum);
+              const connectBtn = document.querySelector('.connect-btn');
+              if (connectBtn) {
+                  connectBtn.addEventListener('click', connectWallet);
+              }
+              window.ethereum.on('accountsChanged', handleAccountsChanged);
+          }
+      }
+      async function connectWallet() {
+          try {
+              const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+              handleAccountsChanged(accounts);
+          } catch (error) {
+              console.error('Failed to connect wallet:', error);
+          }
+      }
+      function handleAccountsChanged(accounts) {
+          const connectBtn = document.querySelector('.connect-btn');
+          if (!connectBtn) return;
+          if (accounts.length === 0) {
+              connectBtn.textContent = translations[currentLang].connectWallet;
+          } else {
+              const shortAddress = `${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`;
+              connectBtn.textContent = shortAddress;
+          }
+      }
+      function initializeLanguageToggle() {
+          const langSelect = document.querySelector('.lang-select');
+          if (langSelect) {
+              langSelect.addEventListener('change', (e) => {
+                  currentLang = e.target.value;
+                  updateLanguage();
+              });
+              langSelect.addEventListener('input', (e) => {
+                  currentLang = e.target.value;
+                  updateLanguage();
+              });
+          }
+          updateLanguage();
+      }
+      function updateLanguage() {
+          document.querySelectorAll('[data-translate]').forEach(element => {
+              const key = element.dataset.translate;
+              const translationPath = key.split('.');
+              let translation = translations[currentLang];
+              for (const path of translationPath) {
+                  translation = translation?.[path];
+              }
+              if (translation) {
+                  element.textContent = translation;
+              }
+          });
+          const searchInput = document.querySelector('.search-input');
+          if (searchInput) {
+              searchInput.placeholder = translations[currentLang].search;
+          }
+          const connectBtn = document.querySelector('.connect-btn');
+          if (connectBtn && !connectBtn.textContent.includes('0x')) {
+              connectBtn.textContent = translations[currentLang].connectWallet;
+          }
+      }
+      function isMobileDevice() {
+          return window.innerWidth <= 768;
+      }
+      function optimizeForMobile() {
+          if (isMobileDevice()) {
+              const galleryGrid = document.querySelector('.gallery-grid');
+              if (galleryGrid) {
+                  galleryGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+              }
+              const modalContent = document.querySelector('.nft-modal .modal-content');
+              if (modalContent) {
+                  modalContent.style.gridTemplateColumns = '1fr';
+              }
+          }
+      }
+      function debounce(func, wait) {
+          let timeout;
+          return function(...args) {
+              clearTimeout(timeout);
+              timeout = setTimeout(() => func(...args), wait);
+          };
+      }
+      function lazyLoadImages() {
+          const images = document.querySelectorAll('img[data-src]');
+          const imageObserver = new IntersectionObserver((entries, observer) => {
+              entries.forEach(entry => {
+                  if (entry.isIntersecting) {
+                      const img = entry.target;
+                      img.src = img.dataset.src;
+                      img.removeAttribute('data-src');
+                      observer.unobserve(img);
+                  }
+              });
+          });
+          images.forEach(img => imageObserver.observe(img));
+      }
+      function handleError(error, context) {
+          console.error(`Error in ${context}:`, error);
+          const errorContainer = document.querySelector('.error-container');
+          if (errorContainer) {
+              errorContainer.textContent = `エラーが発生しました: ${error.message}`;
+              errorContainer.style.display = 'block';
+          }
+      }
+      try {
+          populateGallery();
+          initializeTabs();
+          initializeSearch();
+          initializeLanguageToggle();
+          initializeWeb3();
+          optimizeForMobile();
+          lazyLoadImages();
+          window.addEventListener('resize', debounce(() => {
+              optimizeForMobile();
+          }, 250));
+      } catch (error) {
+          handleError(error, 'application initialization');
+      }
+    });
+  </script>
+</body>
+</html>
