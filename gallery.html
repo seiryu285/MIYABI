@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>MIYABI - Japanese Art NFT Collection | Gallery</title>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500&display=swap" rel="stylesheet">
   <style>
-    /* 共通リセット */
+    /* Reset */
     * {
       margin: 0;
       padding: 0;
@@ -17,8 +17,9 @@
       font-family: "Yu Mincho", "YuMincho", serif;
       background-color: #ffffff;
       overflow-x: hidden;
+      color: #333;
     }
-    /* ナビゲーション（ギャラリーページ用） */
+    /* Navigation (for gallery page) */
     .nav {
       position: fixed;
       top: 30px;
@@ -39,9 +40,10 @@
     .nav a:hover {
       color: #FFD700;
     }
+    /* 言語選択タブの背景・境界線 */
     .nav .lang-select {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       color: white;
       padding: 5px 10px;
       border-radius: 4px;
@@ -61,64 +63,13 @@
     .nav .connect-btn:hover {
       background: rgba(255, 255, 255, 0.2);
     }
-    /* ABOUTリンクも残す */
-    /* ギャラリーコンテナ */
+    /* Gallery container */
     .gallery-container {
       padding: 2rem;
       margin-top: 140px;
       background-color: #ffffff;
     }
-    .gallery-header {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-    .search-box {
-      position: relative;
-      max-width: 320px;
-    }
-    .search-input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      padding-right: 2.5rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-family: inherit;
-    }
-    .search-input:focus {
-      outline: none;
-      border-color: #FFB7C5;
-    }
-    .search-icon {
-      position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #666;
-      pointer-events: none;
-    }
-    .tab-container {
-      display: flex;
-      gap: 0.5rem;
-    }
-    .tab-btn {
-      padding: 4px 8px;
-      background: transparent;
-      border: 1px solid #FFB7C5;
-      color: #FFB7C5;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: 'Rajdhani', sans-serif;
-      font-weight: 500;
-      font-size: 0.75rem;
-      transition: all 0.3s ease;
-    }
-    .tab-btn.active {
-      background: #FFB7C5;
-      color: #000;
-    }
+    /* ギャラリーのグリッド */
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -154,7 +105,7 @@
       border-radius: 4px;
       z-index: 2;
     }
-    /* NFT詳細モーダル */
+    /* NFT Detail Modal */
     .nft-modal {
       position: fixed;
       top: 0;
@@ -167,7 +118,6 @@
       z-index: 1000;
       transition: all 0.3s ease;
     }
-    /* オーバーレイ（従来の暗いオーバーレイ） */
     .nft-modal::before {
       content: '';
       position: fixed;
@@ -180,7 +130,6 @@
       -webkit-backdrop-filter: blur(8px);
       z-index: -1;
     }
-    /* モーダル背景（画像から取得した背景色を適用） */
     .modal-background {
       position: fixed;
       top: 0;
@@ -192,7 +141,6 @@
       transition: background-color 0.3s ease;
       z-index: -2;
     }
-    /* モバイル用オーバーレイ：画像背景色で全画面を覆う */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -223,8 +171,43 @@
       overflow: hidden;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
     }
-    /* Closeボタン：背景・枠を削除し×印のみ */
+    /* Fullscreen for video on mobile */
+    @media (max-width: 768px) {
+      .modal-content.video-active {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+      }
+      .modal-content.video-active .modal-info {
+        display: none;
+      }
+      .modal-content.video-active .modal-image video {
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        border-radius: 0;
+      }
+    }
+    /* Desktop optimization for video */
+    @media (min-width: 769px) {
+      .modal-content.video-active {
+        width: 90%;
+        height: 80vh;
+        border-radius: 12px;
+        margin: auto;
+      }
+      .modal-content.video-active .modal-info {
+        display: none;
+      }
+      .modal-content.video-active .modal-image video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 12px;
+      }
+    }
     .modal-close {
       position: absolute;
       top: 1.5rem;
@@ -265,13 +248,16 @@
       justify-content: center;
       max-height: 100%;
       padding: 1rem;
+      position: relative;
     }
-    .modal-image img {
+    .modal-image img,
+    .modal-image video {
       max-width: 100%;
       max-height: 85vh;
       object-fit: contain;
       border-radius: 16px;
     }
+    /* Note: video tag does not include controls attribute so no native UI is shown */
     .modal-info {
       width: 400px;
       height: 100%;
@@ -328,7 +314,6 @@
     .detail-label {
       opacity: 0.8;
     }
-    /* スクロールバーのカスタマイズ */
     .modal-info::-webkit-scrollbar {
       width: 8px;
     }
@@ -355,7 +340,8 @@
       .modal-image {
         padding: 0;
       }
-      .modal-image img {
+      .modal-image img,
+      .modal-image video {
         max-height: 40vh;
       }
       .modal-title {
@@ -397,46 +383,37 @@
   </style>
 </head>
 <body>
-  <!-- ナビゲーション（ギャラリーページ用） -->
+  <!-- Navigation -->
   <nav class="nav">
     <select class="lang-select">
       <option value="ja">JP</option>
-      <option value="en">EN</option>
+      <option value="en" selected>EN</option>
     </select>
     <button class="connect-btn" data-translate="connectWallet">CONNECT</button>
+    <!-- 追加：没入体験へ移動するタブ -->
+    <a href="immersive.html" data-translate="enterWorld">ENTER</a>
     <a href="gallery.html" class="gallery-link" data-translate="gallery">VIEW GALLERY</a>
     <a href="about.html" data-translate="about">ABOUT</a>
   </nav>
 
-  <!-- ギャラリーコンテナ -->
+  <!-- Gallery Container -->
   <div class="gallery-container">
-    <div class="gallery-header">
-      <div class="search-box">
-        <input type="text" placeholder="名前または番号で検索..." class="search-input">
-        <span class="search-icon">🔍</span>
-      </div>
-      <div class="tab-container">
-        <button class="tab-btn active" data-tab="all" data-translate="ui.all">すべて</button>
-        <button class="tab-btn" data-tab="recent" data-translate="ui.recent">新着</button>
-        <button class="tab-btn" data-tab="popular" data-translate="ui.popular">人気</button>
-        <button class="tab-btn" data-tab="trending" data-translate="ui.trending">トレンド</button>
-      </div>
-    </div>
     <div class="gallery-grid">
-      <!-- NFTアイテムはJSで生成 -->
+      <!-- NFT items are生成 via JS -->
     </div>
   </div>
 
-  <!-- NFT詳細モーダル -->
+  <!-- NFT Detail Modal -->
   <div class="nft-modal" id="nftModal">
-    <!-- モバイル用オーバーレイ：画像背景色が全面に反映 -->
     <div class="modal-overlay"></div>
     <div class="modal-content">
       <div class="modal-background"></div>
       <button class="modal-close">×</button>
       <div class="modal-inner">
         <div class="modal-image">
+          <!-- 初期表示は画像、動画は非表示 -->
           <img id="modalImage" src="" alt="NFT Detail">
+          <video id="modalVideo" style="display: none;" playsinline></video>
         </div>
         <div class="modal-info">
           <div class="modal-header">
@@ -450,15 +427,15 @@
           <div class="modal-traits" id="modalTraits"></div>
           <div class="modal-details">
             <div class="detail-item">
-              <span class="detail-label">スタイル:</span>
+              <span class="detail-label" data-translate="details.style">Style:</span>
               <span class="detail-value" id="modalStyle"></span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">制作技法:</span>
+              <span class="detail-label" data-translate="details.method">Method:</span>
               <span class="detail-value" id="modalMethod"></span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">装飾:</span>
+              <span class="detail-label" data-translate="details.accessory">Accessory:</span>
               <span class="detail-value" id="modalAccessory"></span>
             </div>
           </div>
@@ -467,194 +444,824 @@
     </div>
   </div>
 
-  <!-- Web3ライブラリ読み込み -->
+  <!-- Web3 Library -->
   <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
-  <!-- Color Thiefライブラリ読み込み -->
+  <!-- Color Thief Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // NFTデータの定義
-      const nftData = [
-          {
-              id: 1,
-              title: "蒼波 - 波紋の継承者 NFT #1",
-              description: `古都・鎌倉の染織師の家系に生まれた蒼波は、代々受け継がれる「絞り染め」の技を持つ青年アーティスト。
-静かな湖のように落ち着いた雰囲気を持ちながらも、時に大きな波を巻き起こすような情熱を秘めている。
-幼い頃から祖父母の工房で染めの技術とともに「波」という存在の意味を学び、その教えを胸に「動く波」となることを決意。
-現在は東京を拠点に、デジタルアートと伝統染織の融合を目指し、波紋のような作品を生み出し続けている。
-彼が身に纏う着物は、デジタルアートと手染めの技法が融合した唯一無二の一着。
-その波模様には、伝統と革新の間で揺れ動く彼の生き様が表現されている。
-「ただ古いものを守るのではなく、そこに新しい風を吹き込むこと」
-それこそが、彼の信じる道。彼の作品は、波紋のようにじわじわと世界に広がりつつある。
-四字熟語「温故知新」は、まさに彼の生き方そのものを表している。`,
-              image: "assets/nft1.jpg",
-              style: "現代絞り染め",
-              method: "デジタル描画・絞り染め融合",
-              accessory: "波模様の着物",
-              collection: "MIYABI",
-              traits: {
-                  personality: "静謐・情熱・完璧主義",
-                  specialty: "伝統とデジタルの融合",
-                  origin: "鎌倉",
-                  currentBase: "東京",
-                  fourCharacterIdiom: "温故知新"
-              }
-          },
-          {
-              id: 2,
-              title: "MIYABI #002",
-              description: "現代的なアレンジを加えた着物デザイン",
-              image: "assets/nft2.jpg",
-              style: "モダン",
-              method: "デジタル描画",
-              accessory: "簪"
-          },
-          {
-              id: 3,
-              title: "MIYABI #003",
-              description: "四季の美しさを表現した着物アート",
-              image: "assets/nft3.jpg",
-              style: "季節",
-              method: "デジタル描画",
-              accessory: "花"
-          }
-      ];
-      // 追加データ（ID 4～20）
-      for (let i = 4; i <= 20; i++) {
-          nftData.push({
-              id: i,
-              title: `MIYABI #${i.toString().padStart(4, '0')}`,
-              description: "日本の伝統美をモダンに解釈したデジタルアート",
-              image: `assets/nft${i}.jpg`,
-              style: i % 2 === 0 ? "モダン" : "古典",
-              method: "デジタル描画",
-              accessory: ["扇子", "簪", "花", "刀", "和傘"][i % 5]
-          });
+    // 翻訳用オブジェクト
+    const translations = {
+      en: {
+        connectWallet: "CONNECT",
+        gallery: "VIEW GALLERY",
+        about: "ABOUT",
+        enterWorld: "ENTER",
+        search: "Search by name or number...",
+        ui: {
+          all: "All",
+          recent: "Recent",
+          popular: "Popular",
+          trending: "Trending"
+        },
+        details: {
+          style: "Style:",
+          method: "Method:",
+          accessory: "Accessory:"
+        },
+        traitsTitle: "Traits"
+      },
+      ja: {
+        connectWallet: "ウォレット接続",
+        gallery: "ギャラリーを見る",
+        about: "このプロジェクトについて",
+        enterWorld: "没入体験",
+        search: "名前または番号で検索...",
+        ui: {
+          all: "すべて",
+          recent: "新着",
+          popular: "人気",
+          trending: "トレンド"
+        },
+        details: {
+          style: "スタイル:",
+          method: "制作技法:",
+          accessory: "装飾:"
+        },
+        traitsTitle: "特性"
       }
-      // 翻訳データと初期状態
-      let currentLang = document.querySelector('.lang-select') ? document.querySelector('.lang-select').value : 'ja';
-      const translations = {
-          ja: {
-              gallery: 'ギャラリー',
-              collection: 'コレクション',
-              about: 'について',
-              search: '名前または番号で検索...',
-              filters: 'フィルター',
-              artist: 'アーティスト',
-              creationDate: '制作日',
-              connectWallet: 'ウォレット接続',
-              ui: {
-                  gallery: "ギャラリー",
-                  collection: "コレクション",
-                  about: "概要",
-                  all: "すべて",
-                  recent: "新着",
-                  popular: "人気",
-                  trending: "トレンド",
-                  filter: "フィルター",
-                  clear: "クリア",
-                  style: "着物スタイル",
-                  pattern: "模様",
-                  technique: "制作技法",
-                  color: "色彩",
-                  material: "素材",
-                  era: "時代背景",
-                  traditionalTechnique: "伝統技法",
-                  digitalTechnique: "デジタル技法",
-                  close: "閉じる",
-                  decoration: "装飾",
-                  catEars: "猫耳",
-                  frogDecoration: "蛙装飾",
-                  kimono: "着物",
-                  yukata: "浴衣",
-                  hakama: "袴"
-              },
-              nfts: {
-                  1: {
-                      title: "蒼波 - 波紋の継承者 NFT #1",
-                      description: `古都・鎌倉の染織師の家系に生まれた蒼波は、代々受け継がれる「絞り染め」の技を持つ青年アーティスト。
-静かな湖のように落ち着いた雰囲気を持ちながらも、時に大きな波を巻き起こすような情熱を秘めている。`,
-                      traits: {
-                          style: "現代絞り染め",
-                          pattern: "波紋",
-                          technique: "デジタル描画・絞り染め融合",
-                          color: "藍色グラデーション",
-                          material: "正絹"
-                      }
-                  }
-              }
-          },
-          en: {
-              gallery: 'Gallery',
-              collection: 'Collection',
-              about: 'About',
-              search: 'Search by name or number...',
-              filters: 'Filters',
-              artist: 'Artist',
-              creationDate: 'Creation Date',
-              connectWallet: 'Connect Wallet',
-              ui: {
-                  gallery: "Gallery",
-                  collection: "Collection",
-                  about: "About",
-                  all: "All",
-                  recent: "Recent",
-                  popular: "Popular",
-                  trending: "Trending",
-                  filter: "Filter",
-                  clear: "Clear",
-                  style: "Kimono Style",
-                  pattern: "Pattern",
-                  technique: "Technique",
-                  color: "Color",
-                  material: "Material",
-                  era: "Era",
-                  traditionalTechnique: "Traditional Technique",
-                  digitalTechnique: "Digital Technique",
-                  close: "Close",
-                  decoration: "Decoration",
-                  catEars: "Cat Ears",
-                  frogDecoration: "Frog Decoration",
-                  kimono: "Kimono",
-                  yukata: "Yukata",
-                  hakama: "Hakama"
-              },
-              nfts: {
-                  1: {
-                      title: "Blue Wave - The Ripple Inheritor NFT #1",
-                      description: `A young artist born into a family of textile artisans in the ancient capital of Kamakura,
-possessing the inherited technique of "shibori" dyeing passed down through generations.`,
-                      traits: {
-                          style: "Modern Shibori",
-                          pattern: "Ripple",
-                          technique: "Digital Drawing & Shibori Fusion",
-                          color: "Indigo Gradation",
-                          material: "Pure Silk"
-                      }
-                  }
-              }
+    };
+
+    let currentLang = "en";
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // NFTデータ定義 (#1～#30)
+      // ※以下は一例です。各キャラクターの traits には英語版と日本語版の値を追加してください。
+      const nftData = [
+        {
+          id: 1,
+          title: "MIYABI #001: Aonami - The Inheritor of Ripples",
+          description_en: "Aonami, hailing from a lineage of Kamakura textile artisans, upholds the ancient art of indigo dyeing. Calm as a deep ocean, he channels a fervent passion to fuse digital art with traditional techniques.",
+          description_ja: "青波は鎌倉の染織職人の家系に生まれ、古来の藍染技法を受け継いでいます。深海のような静けさを持ちながら、デジタルアートと伝統技法の融合に情熱を注ぐ。",
+          image: "assets/nft1.jpg",
+          video: "assets/nft1.mp4",
+          style: "Contemporary Shibori",
+          method: "Digital Painting & Dyeing Fusion",
+          accessory: "Kimono with Wave Pattern",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Calm & Passionate",
+            personality_ja: "穏やかで情熱的",
+            specialty_en: "Indigo Dyeing",
+            specialty_ja: "藍染",
+            currentBase_en: "Tokyo",
+            currentBase_ja: "東京",
+            fourCharacterIdiom_en: "Aosio Dream Rhyme",
+            fourCharacterIdiom_ja: "青藍夢韻"
           }
-      };
+        },
+        // #2～#10 のデータ（各 traits も同様に英語版/日本語版を追加）
+        {
+          id: 2,
+          title: "MIYABI #002: Kakurin - The Swordmaster of Tradition",
+          description_en: "Kakurin, descendant of a samurai lineage bearing the crane emblem, has been trained in swordsmanship since childhood.",
+          description_ja: "鶴凛は鶴の家紋を持つ武家の末裔で、幼少より剣の修行を積んでいる。",
+          image: "assets/nft2.jpg",
+          video: "",
+          style: "Samurai Urban",
+          method: "Traditional Swordsmanship + Modern Security",
+          accessory: "Crane Emblem",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Polite & Proud",
+            personality_ja: "礼儀正しく誇り高い",
+            specialty_en: "Swordsmanship",
+            specialty_ja: "剣術",
+            currentBase_en: "Metropolis",
+            currentBase_ja: "大都市",
+            fourCharacterIdiom_en: "Crane Shadow Blade",
+            fourCharacterIdiom_ja: "鶴影剣"
+          }
+        },
+        // #3～#10 も同様に記述（省略）
+        {
+          id: 3,
+          title: "MIYABI #003: Shiki",
+          description_en: "Shiki transforms nature's hues into stunning textile art, reflecting the timeless elegance of nature.",
+          description_ja: "四季は自然の色彩を見事なテキスタイルアートへ昇華させ、永遠の優雅さを映し出す。",
+          image: "assets/nft3.jpg",
+          video: "assets/nft3.mp4",
+          style: "Seasonal",
+          method: "Digital Painting + Textile Fusion",
+          accessory: "Floral Motifs",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Elegant & Sensitive",
+            personality_ja: "優雅で繊細",
+            specialty_en: "Textile Art",
+            specialty_ja: "テキスタイルアート",
+            currentBase_en: "Multiple Bases",
+            currentBase_ja: "複数の拠点",
+            fourCharacterIdiom_en: "Colorful Seasonal Tour",
+            fourCharacterIdiom_ja: "彩季巡礼"
+          }
+        },
+        {
+          id: 4,
+          title: "MIYABI #004: Gadō",
+          description_en: "Gadō, a swordsman with a cybernetic limb, fuses traditional swordsmanship with futuristic technology.",
+          description_ja: "牙堂はサイバー義足を装着し、伝統的な剣術と未来技術を融合させた戦士。",
+          image: "assets/nft4.jpg",
+          video: "assets/nft4.mp4",
+          style: "Cybernetic Street",
+          method: "Cyber Limb Acceleration",
+          accessory: "Mechanical Leg",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Rugged & Just",
+            personality_ja: "荒々しくも正義感が強い",
+            specialty_en: "Accelerated Swordsmanship",
+            specialty_ja: "加速した剣術",
+            currentBase_en: "City Center",
+            currentBase_ja: "市中心",
+            fourCharacterIdiom_en: "Machine Limb Steel",
+            fourCharacterIdiom_ja: "機械義足鋼"
+          }
+        },
+        {
+          id: 5,
+          title: "MIYABI #005: Kamari - The Innovator of Blossoms",
+          description_en: "Kamari uses biotechnology to create new blossoms, bridging ancient methods with futuristic techniques.",
+          description_ja: "華鞠はバイオテクノロジーで新たな花を創り出し、古来の秘法と未来技術を融合させる。",
+          image: "assets/nft5.jpg",
+          video: "assets/nft5.mp4",
+          style: "Floral & Biotech",
+          method: "Genetic Engineering + Floral Art",
+          accessory: "Special Bio Flower",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Graceful & Passionate",
+            personality_ja: "優雅で情熱的",
+            specialty_en: "Floral Creation",
+            specialty_ja: "花の創造",
+            currentBase_en: "Research Institute",
+            currentBase_ja: "研究所",
+            fourCharacterIdiom_en: "Floral Dream Color",
+            fourCharacterIdiom_ja: "花夢色彩"
+          }
+        },
+        {
+          id: 6,
+          title: "MIYABI #006: Tsudzune",
+          description_en: "Tsudzune blends traditional instruments with modern electronic music, captivating a global audience.",
+          description_ja: "鼓音は伝統楽器と最新電子音楽を融合させ、世界中を魅了する。",
+          image: "assets/nft6.jpg",
+          video: "assets/nft6.mp4",
+          style: "Traditional Instruments x EDM",
+          method: "Digital Sampler + Live Performance",
+          accessory: "Drum & Shamisen",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Cheerful & Passionate",
+            personality_ja: "明るく情熱的",
+            specialty_en: "Music Fusion",
+            specialty_ja: "音楽の融合",
+            currentBase_en: "SNS World",
+            currentBase_ja: "SNS",
+            fourCharacterIdiom_en: "Drum Sound Rhythm",
+            fourCharacterIdiom_ja: "鼓律韻律"
+          }
+        },
+        {
+          id: 7,
+          title: "MIYABI #007: Kōka",
+          description_en: "Kōka captivates the world with avant-garde collections after mastering the art of crimson dyeing.",
+          description_ja: "紅霞は紅染技法を極め、前衛的なコレクションで世界を魅了する。",
+          image: "assets/nft7.jpg",
+          video: "assets/nft7.mp4",
+          style: "Crimson Dye Fashion",
+          method: "Traditional Dyeing + Avant-Garde Design",
+          accessory: "Red Embellishments",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Perfectionist & Elegant",
+            personality_ja: "完璧主義で優雅",
+            specialty_en: "Crimson Dyeing",
+            specialty_ja: "紅染",
+            currentBase_en: "Tokyo",
+            currentBase_ja: "東京",
+            fourCharacterIdiom_en: "Crimson Radiance",
+            fourCharacterIdiom_ja: "紅輝煌然"
+          }
+        },
+        {
+          id: 8,
+          title: "MIYABI #008: Hakuga",
+          description_en: "Hakuga, born with albinism, is a stealthy assassin trained by a ninja clan.",
+          description_ja: "白牙はアルビノで、忍者集団で鍛えられた暗殺者。",
+          image: "assets/nft8.jpg",
+          video: "assets/nft8.mp4",
+          style: "Albinistic Ninja",
+          method: "Assassination Techniques + Stealth Attire",
+          accessory: "White Hair & Garb",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Taciturn & Cold",
+            personality_ja: "無口で冷淡",
+            specialty_en: "Covert Operations",
+            specialty_ja: "隠密行動",
+            currentBase_en: "Underworld",
+            currentBase_ja: "裏社会",
+            fourCharacterIdiom_en: "White Hunt Shadow",
+            fourCharacterIdiom_ja: "白狩影"
+          }
+        },
+        {
+          id: 9,
+          title: "MIYABI #009: Yūmen",
+          description_en: "Yūmen pioneers a new mask culture by blending traditional craftsmanship with digital innovation.",
+          description_ja: "幽面は伝統工芸とデジタル革新を融合し、新たな仮面文化を切り拓く。",
+          image: "assets/nft9.jpg",
+          video: "assets/nft9.mp4",
+          style: "Noh Mask x AR",
+          method: "Wood Carving + Digital Projection",
+          accessory: "Various Masks",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Mysterious & Introspective",
+            personality_ja: "神秘的で内省的",
+            specialty_en: "Spiritual Visualization",
+            specialty_ja: "霊的表現",
+            currentBase_en: "Unknown",
+            currentBase_ja: "不明",
+            fourCharacterIdiom_en: "Mysterious Mask Time",
+            fourCharacterIdiom_ja: "仮面時雨"
+          }
+        },
+        {
+          id: 10,
+          title: "MIYABI #010: Shura",
+          description_en: "Shura, a lone warrior of a fallen samurai lineage, charges down the 'path of Ashura' in his self-crafted crimson cyber-armor.",
+          description_ja: "修羅は没落した武家の末裔で、独自の紅いサイバーアーマーを纏い『修羅の道』を突き進む。",
+          image: "assets/nft10.jpg",
+          video: "assets/nft10.mp4",
+          style: "Fallen Samurai x Cyber Armor",
+          method: "Self-Crafted Armor + Swordplay",
+          accessory: "Crimson Armor",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Fierce & Lone",
+            personality_ja: "激しく孤高",
+            specialty_en: "Intense Combat",
+            specialty_ja: "激戦",
+            currentBase_en: "Ruins",
+            currentBase_ja: "廃墟",
+            fourCharacterIdiom_en: "Shura Crimson Armor",
+            fourCharacterIdiom_ja: "修羅紅衣"
+          }
+        },
+        // 以下、#011～#030 のデータ（各 traits も英語版・日本語版を用意）
+        {
+          id: 11,
+          title: "MIYABI #011: 千流 (Senryu)",
+          description_en: "Senryu bridges tradition and innovation by absorbing diverse cultural essences to create new MIYABI forms. His ever-evolving work epitomizes adaptability.",
+          description_ja: "千流は伝統と革新を繋ぎ、多様な文化のエッセンスを取り入れて新たなMIYABIを創造、その作品は柔軟に変化し続る。",
+          image: "assets/nft11.jpg",
+          video: "",
+          style_en: "Fusion of Cultures",
+          style_ja: "多文化の融合",
+          method_en: "Traditional + Digital Art Fusion",
+          method_ja: "伝統とデジタルアートの融合",
+          accessory_en: "Dynamic Brushstrokes",
+          accessory_ja: "ダイナミックな筆致",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Flexible & Original",
+            personality_ja: "柔軟で独創的",
+            specialty_en: "Fusion of Various Arts",
+            specialty_ja: "多様な芸術の融合",
+            currentBase_en: "Global",
+            currentBase_ja: "グローバル",
+            fourCharacterIdiom_en: "Senpen Banka",
+            fourCharacterIdiom_ja: "千変万化"
+          }
+        },
+        {
+          id: 12,
+          title: "MIYABI #012: 煌牙 (Koga)",
+          description_en: "Koga merges digital aesthetics with traditional Japanese art. His cyber-inspired designs radiate dazzling brilliance.",
+          description_ja: "煌牙はデジタル美学と伝統的な日本美を融合させ、サイバー調のデザインがまばゆい輝きを放つ。",
+          image: "assets/nft12.jpg",
+          video: "",
+          style_en: "Cyber Fusion",
+          style_ja: "サイバーフュージョン",
+          method_en: "Digital Art + Traditional Techniques",
+          method_ja: "デジタルアートと伝統技法の融合",
+          accessory_en: "Luminescent Accents",
+          accessory_ja: "光彩のアクセント",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Innovative & Passionate",
+            personality_ja: "革新的で情熱的",
+            specialty_en: "Digital & Traditional Fusion",
+            specialty_ja: "デジタルと伝統の融合",
+            currentBase_en: "Global",
+            currentBase_ja: "グローバル",
+            fourCharacterIdiom_en: "Kōki Sanzen",
+            fourCharacterIdiom_ja: "光輝燦然"
+          }
+        },
+        {
+          id: 13,
+          title: "MIYABI #013: 影牙 (Eiga)",
+          description_en: "Eiga, a secret guardian and ninja descendant, fuses ancient ninjutsu with modern technology.",
+          description_ja: "忍の末裔である影牙は、古来の忍術と最新技術を融合して敵に静かに迫る。",
+          image: "assets/nft13.jpg",
+          video: "",
+          style_en: "Stealth Combat",
+          style_ja: "ステルス戦闘",
+          method_en: "Ninjutsu + Modern Tech",
+          method_ja: "忍術と最新技術の融合",
+          accessory_en: "Concealed Blade",
+          accessory_ja: "隠し刃",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Calm & Calculated",
+            personality_ja: "冷静かつ計算高い",
+            specialty_en: "Stealth & Combat",
+            specialty_ja: "隠密と戦闘",
+            currentBase_en: "Urban Shadows",
+            currentBase_ja: "都市の闇",
+            fourCharacterIdiom_en: "Eion Ninjin",
+            fourCharacterIdiom_ja: "影隠忍刃"
+          }
+        },
+        {
+          id: 14,
+          title: "MIYABI #014: 幽練 (Yuren)",
+          description_en: "Yuren channels spiritual power through his masks, revealing the soul of its wearer.",
+          description_ja: "幽練は仮面を通して霊的な力を引き出し、着用者の魂を映し出す。",
+          image: "assets/nft14.jpg",
+          video: "",
+          style_en: "Spiritual Craft",
+          style_ja: "霊的工芸",
+          method_en: "Traditional Mask Making + Digital Expression",
+          method_ja: "伝統的な能面制作とデジタル表現",
+          accessory_en: "Mystic Mask",
+          accessory_ja: "神秘の仮面",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Quiet & Mysterious",
+            personality_ja: "静かで神秘的",
+            specialty_en: "Noh Mask & Spirit Art",
+            specialty_ja: "能面と霊的表現",
+            currentBase_en: "Ancient City",
+            currentBase_ja: "古都",
+            fourCharacterIdiom_en: "Yūgen Shinpi",
+            fourCharacterIdiom_ja: "幽玄神秘"
+          }
+        },
+        {
+          id: 15,
+          title: "MIYABI #015: 白菊 (Shiragiku)",
+          description_en: "Shiragiku, descendant of a noble lineage preserving court culture, conceals a warrior’s spirit beneath serene dignity.",
+          description_ja: "白菊は宮廷文化と武術を継承する一族の末裔で、静謐な佇まいの中に戦士の精神を秘めてる。",
+          image: "assets/nft15.jpg",
+          video: "",
+          style_en: "Court Elegance",
+          style_ja: "宮廷の優雅さ",
+          method_en: "Ancient Chanting & Martial Control",
+          method_ja: "古代詠唱と精神操作武術",
+          accessory_en: "Ornate Fan",
+          accessory_ja: "装飾的な扇子",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Serene & Noble",
+            personality_ja: "穏やかで気高い",
+            specialty_en: "Ancient Chanting",
+            specialty_ja: "古代詠唱",
+            currentBase_en: "Royal Grounds",
+            currentBase_ja: "王宮",
+            fourCharacterIdiom_en: "Kokou Gashin",
+            fourCharacterIdiom_ja: "孤高雅心"
+          }
+        },
+        {
+          id: 16,
+          title: "MIYABI #016: 紅蓮 (Kurenai)",
+          description_en: "Kurenai dazzles with brilliance and merges court dance with martial arts.",
+          description_ja: "紅蓮は華やかな輝きと武舞を融合させた存在。",
+          image: "assets/nft16.jpg",
+          video: "",
+          style_en: "Martial Dance",
+          style_ja: "武舞",
+          method_en: "Court Dance + Martial Arts",
+          method_ja: "宮廷舞踊と武術の融合",
+          accessory_en: "Ceremonial Adornments",
+          accessory_ja: "儀式用装飾",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Elegant & Fierce",
+            personality_ja: "優雅で激しい",
+            specialty_en: "Dance Combat",
+            specialty_ja: "舞踏戦闘",
+            currentBase_en: "Ceremonial Halls",
+            currentBase_ja: "儀式の間",
+            fourCharacterIdiom_en: "Rekka Sanzen",
+            fourCharacterIdiom_ja: "烈華燦然"
+          }
+        },
+        {
+          id: 17,
+          title: "MIYABI #017: 黒薔薇 (Kurobara)",
+          description_en: "Kurobara blends mystical beauty with dangerous allure, subduing foes without physical combat.",
+          description_ja: "黒薔薇は神秘的な美と危険な魅力を併せ持ち、戦わずして相手を幻惑する。",
+          image: "assets/nft17.jpg",
+          video: "",
+          style_en: "Illusory Art",
+          style_ja: "幻影の芸術",
+          method_en: "Enchantment & Dark Tactics",
+          method_ja: "幻惑と闇戦術",
+          accessory_en: "Obscure Emblem",
+          accessory_ja: "不明瞭な紋章",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Mysterious & Alluring",
+            personality_ja: "神秘的で魅惑的",
+            specialty_en: "Illusion & Enchantment",
+            specialty_ja: "幻影と魅了",
+            currentBase_en: "Shadow Realm",
+            currentBase_ja: "影の界",
+            fourCharacterIdiom_en: "Yūen Yōka",
+            fourCharacterIdiom_ja: "幽艶妖華"
+          }
+        },
+        {
+          id: 18,
+          title: "MIYABI #018: 蒼牙 (Souga)",
+          description_en: "Souga seeks perfection in traditional martial arts while reflecting on the nature of battle.",
+          description_ja: "蒼牙は伝統武術の極致を求めながら、戦いの意味について内省する求道者。",
+          image: "assets/nft18.jpg",
+          video: "",
+          style_en: "Swordsmanship Philosophy",
+          style_ja: "剣道哲学",
+          method_en: "Traditional Swordplay + Reflective Combat",
+          method_ja: "古流剣術と反省的戦闘の融合",
+          accessory_en: "Ancient Sword",
+          accessory_ja: "古代の剣",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Determined & Thoughtful",
+            personality_ja: "決意に満ち思慮深い",
+            specialty_en: "Classical Swordsmanship",
+            specialty_ja: "古典的剣術",
+            currentBase_en: "Ancient Dojo",
+            currentBase_ja: "古流道場",
+            fourCharacterIdiom_en: "Gōjū Sōsai",
+            fourCharacterIdiom_ja: "剛柔相済"
+          }
+        },
+        {
+          id: 19,
+          title: "MIYABI #019: 翠流 (Suiryu)",
+          description_en: "Suiryu cherishes silence and masters the fluid art of water and wind.",
+          description_ja: "翠流は静寂を愛し、水と風の流動美を極める。",
+          image: "assets/nft19.jpg",
+          video: "",
+          style_en: "Fluid Aesthetics",
+          style_ja: "流動美",
+          method_en: "Art of Water & Wind",
+          method_ja: "水と風の芸術",
+          accessory_en: "Flowing Garb",
+          accessory_ja: "流れる衣装",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Contemplative & Calm",
+            personality_ja: "内省的で穏やか",
+            specialty_en: "Fluid Art",
+            specialty_ja: "流動的な芸術",
+            currentBase_en: "Wandering",
+            currentBase_ja: "放浪",
+            fourCharacterIdiom_en: "Seikan Ryuusui",
+            fourCharacterIdiom_ja: "静観流水"
+          }
+        },
+        {
+          id: 20,
+          title: "MIYABI #020: 紅蓮 (Guren)",
+          description_en: "Guren is a passionate performer specializing in flame dance and tactical aesthetics.",
+          description_ja: "紅蓮は情熱的な舞踏家で、炎の舞と戦術美学を極める。",
+          image: "assets/nft20.jpg",
+          video: "",
+          style_en: "Flame Dance",
+          style_ja: "炎の舞",
+          method_en: "Tactical Aesthetics + Dance",
+          method_ja: "戦術美学と舞踏の融合",
+          accessory_en: "Fiery Adornments",
+          accessory_ja: "炎の装飾",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Passionate & Fearless",
+            personality_ja: "情熱的で大胆",
+            specialty_en: "Flame Dance",
+            specialty_ja: "炎の舞踏",
+            currentBase_en: "Global",
+            currentBase_ja: "世界各地",
+            fourCharacterIdiom_en: "Nentō Buei",
+            fourCharacterIdiom_ja: "燃燈舞影"
+          }
+        },
+        {
+          id: 21,
+          title: "MIYABI #021: 白蓮 (Byakuren)",
+          description_en: "Byakuren exemplifies the purity of Japanese tradition through her graceful sword dance.",
+          description_ja: "白蓮は和の伝統美と剣舞を体現し、清廉潔白な存在感を放つ。",
+          image: "assets/nft21.jpg",
+          video: "",
+          style_en: "Traditional Elegance",
+          style_ja: "伝統美",
+          method_en: "Japanese Sword Dance",
+          method_ja: "和の剣舞",
+          accessory_en: "Elegant Sword",
+          accessory_ja: "優雅な剣",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Noble & Pure",
+            personality_ja: "気高く純粋",
+            specialty_en: "Traditional Beauty",
+            specialty_ja: "伝統美",
+            currentBase_en: "Royal Capital",
+            currentBase_ja: "王都",
+            fourCharacterIdiom_en: "Seiren Keppaku",
+            fourCharacterIdiom_ja: "清廉潔白"
+          }
+        },
+        {
+          id: 22,
+          title: "MIYABI #022: 仮面 (Kamen)",
+          description_en: "Kamen is a mysterious artist specializing in mask crafting and secret techniques.",
+          description_ja: "仮面は謎多き流浪の芸術家で、面打ちと秘術を極めている。",
+          image: "assets/nft22.jpg",
+          video: "",
+          style_en: "Mystery & Illusion",
+          style_ja: "神秘と幻影",
+          method_en: "Mask Craft & Secret Arts",
+          method_ja: "面打ちと秘術の融合",
+          accessory_en: "Intricate Mask",
+          accessory_ja: "精巧な仮面",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Enigmatic & Elusive",
+            personality_ja: "謎めいて捉えどころのない",
+            specialty_en: "Mask Techniques",
+            specialty_ja: "仮面技術",
+            currentBase_en: "Shadow World",
+            currentBase_ja: "影の世界",
+            fourCharacterIdiom_en: "Gen'ei Kisaku",
+            fourCharacterIdiom_ja: "幻影奇策"
+          }
+        },
+        {
+          id: 23,
+          title: "MIYABI #023: 桃華 (Tōka)",
+          description_en: "Tōka masters the art of floral and fragrance techniques, capturing seasonal beauty.",
+          description_ja: "桃華は花と香りの術を極め、四季の美しさを体現する。",
+          image: "assets/nft23.jpg",
+          video: "",
+          style_en: "Floral Elegance",
+          style_ja: "花の優雅さ",
+          method_en: "Flower & Fragrance Techniques",
+          method_ja: "花と香の技術",
+          accessory_en: "Ornate Hairpin",
+          accessory_ja: "装飾的な簪",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Gentle & Resilient",
+            personality_ja: "柔らかく芯の強い",
+            specialty_en: "Floral Art",
+            specialty_ja: "花の芸術",
+            currentBase_en: "Aristocratic District",
+            currentBase_ja: "貴族の街",
+            fourCharacterIdiom_en: "Fūka Setsugetsu",
+            fourCharacterIdiom_ja: "風花雪月"
+          }
+        },
+        {
+          id: 24,
+          title: "MIYABI #024: 黒影 (Kokuei)",
+          description_en: "Kokuei, a silent assassin, fuses the arts of shadow and blade with precision.",
+          description_ja: "黒影は静かな暗殺者で、影と刃を融合させて正確な攻撃を行う。",
+          image: "assets/nft24.jpg",
+          video: "",
+          style_en: "Shadow Assassin",
+          style_ja: "影の暗殺者",
+          method_en: "Stealth Blade Techniques",
+          method_ja: "隠密な刃技術",
+          accessory_en: "Hidden Dagger",
+          accessory_ja: "隠し短剣",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Silent & Deadly",
+            personality_ja: "静かで致命的",
+            specialty_en: "Shadow & Blade Fusion",
+            specialty_ja: "影と刃の融合",
+            currentBase_en: "Underworld",
+            currentBase_ja: "裏社会",
+            fourCharacterIdiom_en: "Ei Bu Senjin",
+            fourCharacterIdiom_ja: "影武千刃"
+          }
+        },
+        {
+          id: 25,
+          title: "MIYABI #025: 月音 (Tsukine)",
+          description_en: "Tsukine, an enigmatic musician, bridges heaven and earth with traditional instruments and cosmic harmonies.",
+          description_ja: "月音は神秘的な音楽家で、和楽器と宇宙の調和で天と地を繋ぐ。",
+          image: "assets/nft25.jpg",
+          video: "",
+          style_en: "Cosmic Harmony",
+          style_ja: "宇宙の調和",
+          method_en: "Traditional Instruments x Cosmic Fusion",
+          method_ja: "和楽器と宇宙の融合",
+          accessory_en: "Celestial Instrument",
+          accessory_ja: "天体楽器",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Mysterious & Harmonious",
+            personality_ja: "神秘的で調和の取れた",
+            specialty_en: "Musical Fusion",
+            specialty_ja: "音楽の融合",
+            currentBase_en: "Temple",
+            currentBase_ja: "神殿",
+            fourCharacterIdiom_en: "Kyōten Rakuen",
+            fourCharacterIdiom_ja: "響天楽音"
+          }
+        },
+        {
+          id: 26,
+          title: "MIYABI #026: 空雅 (Kuuga)",
+          description_en: "Kuuga, a silent swordsman of the skies, wields aerial sword techniques with solitary grace.",
+          description_ja: "空雅は静かな剣士で、天空の剣技を孤高に極める。",
+          image: "assets/nft26.jpg",
+          video: "",
+          style_en: "Aerial Swordplay",
+          style_ja: "空中剣術",
+          method_en: "Sky-High Combat",
+          method_ja: "天空戦闘",
+          accessory_en: "Winged Sword",
+          accessory_ja: "翼の剣",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Silent & Solitary",
+            personality_ja: "静かで孤高",
+            specialty_en: "Aerial Sword Techniques",
+            specialty_ja: "空中剣技",
+            currentBase_en: "Above the Clouds",
+            currentBase_ja: "雲上",
+            fourCharacterIdiom_en: "Tenkū Koei",
+            fourCharacterIdiom_ja: "天空孤影"
+          }
+        },
+        {
+          id: 27,
+          title: "MIYABI #027: 夜鴉 (Yogarasu)",
+          description_en: "Yogarasu, the nocturnal guardian, excels in stealth and shadow tactics.",
+          description_ja: "夜鴉は夜の守護者として、隠密な戦術と影の技術を極めている。",
+          image: "assets/nft27.jpg",
+          video: "",
+          style_en: "Nocturnal Tactics",
+          style_ja: "夜の戦術",
+          method_en: "Stealth & Shadow",
+          method_ja: "隠密と影",
+          accessory_en: "Crescent Dagger",
+          accessory_ja: "三日月の短剣",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Vigilant & Stealthy",
+            personality_ja: "警戒心が強く隠密",
+            specialty_en: "Night Tactics",
+            specialty_ja: "夜間戦術",
+            currentBase_en: "Dark Market",
+            currentBase_ja: "闇市場",
+            fourCharacterIdiom_en: "Ei Jū Yahi",
+            fourCharacterIdiom_ja: "影従夜飛"
+          }
+        },
+        {
+          id: 28,
+          title: "MIYABI #028: 狂華 (Kyōka)",
+          description_en: "Kyōka merges beauty with madness, creating mask dances and labyrinthine illusions.",
+          description_ja: "狂華は美と狂気を融合させ、仮面舞踏と幻影で混沌を表現する。",
+          image: "assets/nft28.jpg",
+          video: "",
+          style_en: "Mad Artistic Expression",
+          style_ja: "狂気の芸術表現",
+          method_en: "Mask Dance + Illusory Techniques",
+          method_ja: "仮面舞踏と幻影技術の融合",
+          accessory_en: "Decorative Mask",
+          accessory_ja: "装飾的な仮面",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Elegant & Unhinged",
+            personality_ja: "優雅で奔放",
+            specialty_en: "Art & Illusion",
+            specialty_ja: "芸術と幻影",
+            currentBase_en: "Masked Theatre",
+            currentBase_ja: "仮面劇場",
+            fourCharacterIdiom_en: "Gakyō Kenran",
+            fourCharacterIdiom_ja: "雅狂絢爛"
+          }
+        },
+        {
+          id: 29,
+          title: "MIYABI #029: 冥 (Mei)",
+          description_en: "Mei, the embodiment of calm rationality, shuns the superfluous and follows the most efficient path. Once a guardian, he now roams as a mercenary fusing ancient martial arts with futuristic tech.",
+          description_ja: "冥は冷静な合理主義者。無駄を排し最短の道を選び、かつての守護者から伝統武術と近未来技術を融合する傭兵となる。",
+          image: "assets/nft29.jpg",
+          video: "",
+          style_en: "Futuristic Warrior",
+          style_ja: "近未来戦士",
+          method_en: "Traditional Martial Arts + Future Tech",
+          method_ja: "伝統武術と未来技術の融合",
+          accessory_en: "Battle Umbrella",
+          accessory_ja: "戦闘用傘",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Calm & Efficient",
+            personality_ja: "冷静で効率的",
+            specialty_en: "Hybrid Combat",
+            specialty_ja: "混合戦闘",
+            currentBase_en: "Global Mercenary",
+            currentBase_ja: "世界中の傭兵",
+            fourCharacterIdiom_en: "Denkō Eiri",
+            fourCharacterIdiom_ja: "電光影裏"
+          }
+        },
+        {
+          id: 30,
+          title: "MIYABI #030: 千早 (Chihaya)",
+          description_en: "Chihaya, a noble warrior with a graceful facade and burning passion, leads the secret 'Senya-kai' in the royal capital.",
+          description_ja: "千早は高貴で優雅な戦士。内に燃える情熱を秘め、王都で秘密結社『千夜会』を率いている。",
+          image: "assets/nft30.jpg",
+          video: "",
+          style_en: "Elegant Warrior",
+          style_ja: "優雅な戦士",
+          method_en: "Dance Sword Technique + Illusion",
+          method_ja: "舞踏剣術と幻影術の融合",
+          accessory_en: "Battle Fan",
+          accessory_ja: "戦扇",
+          collection: "MIYABI",
+          traits: {
+            personality_en: "Noble & Passionate",
+            personality_ja: "気高く情熱的",
+            specialty_en: "Sword Dance & Illusion",
+            specialty_ja: "剣舞と幻影",
+            currentBase_en: "Royal Capital",
+            currentBase_ja: "王都",
+            fourCharacterIdiom_en: "Enshi Giga",
+            fourCharacterIdiom_ja: "艶姿戯画"
+          }
+        }
+      ];
+
+      // NFT Detail Modal 関連処理
       function openModal(nft) {
           const modal = document.getElementById('nftModal');
           if (!modal) return;
           const modalImg = document.getElementById('modalImage');
+          const modalVideo = document.getElementById('modalVideo');
+          const modalInfo = document.querySelector('.modal-info');
+          const modalContent = document.querySelector('.modal-content');
+          // 初期状態：画像＋詳細情報表示、動画は非表示
+          modalImg.style.display = 'block';
+          modalVideo.style.display = 'none';
+          if(modalInfo) {
+            modalInfo.style.display = '';
+          }
+          modalContent.classList.remove('video-active');
+
           modalImg.src = nft.image;
           modalImg.alt = nft.title;
+          if(nft.video) {
+            modalVideo.src = nft.video;
+          } else {
+            modalVideo.src = "";
+          }
           const modalCollectionElem = document.getElementById('modalCollection');
           const modalNumberElem = document.getElementById('modalNumber');
           if (modalCollectionElem) {
               modalCollectionElem.textContent = nft.collection ? nft.collection.toUpperCase() : 'MIYABI';
           }
           if (modalNumberElem) {
-              modalNumberElem.textContent = `#${String(nft.id).padStart(4, '0')}`;
+              modalNumberElem.textContent = "#" + String(nft.id).padStart(4, '0');
           }
           document.getElementById('modalTitle').textContent = nft.title;
-          document.getElementById('modalDescription').textContent = nft.description;
-          document.getElementById('modalStyle').textContent = nft.style || '';
-          document.getElementById('modalMethod').textContent = nft.method || '';
-          document.getElementById('modalAccessory').textContent = nft.accessory || '';
+          // 説明文、style, method, accessory は現在の言語に応じて
+          document.getElementById('modalDescription').textContent = nft["description_" + currentLang];
+          document.getElementById('modalStyle').textContent = nft["style_" + currentLang] || nft.style;
+          document.getElementById('modalMethod').textContent = nft["method_" + currentLang] || nft.method;
+          document.getElementById('modalAccessory').textContent = nft["accessory_" + currentLang] || nft.accessory;
           updateTraits(nft);
+          
+          // 画像読み込み後、背景色抽出（Color Thief利用例）
           modalImg.onload = function() {
               const canvas = document.createElement('canvas');
               const ctx = canvas.getContext('2d');
@@ -662,12 +1269,11 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
               canvas.height = modalImg.height;
               ctx.drawImage(modalImg, 0, 0);
               const imageData = ctx.getImageData(0, 0, 1, 1).data;
-              const bgColor = `rgb(${imageData[0]}, ${imageData[1]}, ${imageData[2]})`;
+              const bgColor = "rgb(" + imageData[0] + ", " + imageData[1] + ", " + imageData[2] + ")";
               const modalBg = document.querySelector('.modal-background');
               if (modalBg) {
                   modalBg.style.backgroundColor = bgColor;
               }
-              // モバイルの場合、modal-overlayにも背景色を適用
               if (window.innerWidth <= 768) {
                   const modalOverlay = document.querySelector('.modal-overlay');
                   if (modalOverlay) {
@@ -675,6 +1281,30 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
                   }
               }
           };
+
+          // 画像クリックで動画表示（動画が存在する場合）
+          modalImg.onclick = function() {
+            if(nft.video && modalVideo.src) {
+              modalImg.style.display = 'none';
+              modalVideo.style.display = 'block';
+              if(modalInfo) {
+                modalInfo.style.display = 'none';
+              }
+              modalContent.classList.add('video-active');
+              modalVideo.play();
+            }
+          };
+          // 動画クリックで画像＋詳細情報表示に戻す
+          modalVideo.onclick = function() {
+            modalVideo.pause();
+            modalVideo.style.display = 'none';
+            modalImg.style.display = 'block';
+            if(modalInfo) {
+              modalInfo.style.display = '';
+            }
+            modalContent.classList.remove('video-active');
+          };
+
           modal.style.display = 'flex';
           setTimeout(() => { modal.classList.add('active'); }, 10);
           document.body.style.overflow = 'hidden';
@@ -683,13 +1313,16 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
       function updateTraits(nft) {
           const modalTraits = document.getElementById('modalTraits');
           if (modalTraits && nft.traits) {
-              let traitsHTML = '<h3>特性</h3><div class="trait-list">';
-              Object.entries(nft.traits).forEach(([key, value]) => {
-                  traitsHTML += `
-                      <div class="trait-item">
-                          <span class="trait-type">${getTraitLabel(key)}:</span>
-                          <span class="trait-value">${value}</span>
-                      </div>`;
+              const keysToShow = ["personality", "specialty", "currentBase", "fourCharacterIdiom"];
+              let traitsHTML = '<h3>' + (translations[currentLang].traitsTitle || "Traits") + '</h3><div class="trait-list">';
+              keysToShow.forEach(key => {
+                  if(nft.traits[key + "_" + currentLang]){
+                    traitsHTML += 
+                      '<div class="trait-item">' +
+                          '<span class="trait-type">' + getTraitLabel(key) + ':</span> ' +
+                          '<span class="trait-value">' + nft.traits[key + "_" + currentLang] + '</span>' +
+                      '</div>';
+                  }
               });
               traitsHTML += '</div>';
               modalTraits.innerHTML = traitsHTML;
@@ -699,11 +1332,10 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
       }
       function getTraitLabel(key) {
           const labels = {
-              personality: '性格',
-              specialty: '専門',
-              origin: '出身',
-              currentBase: '活動拠点',
-              fourCharacterIdiom: '四字熟語'
+              personality: currentLang === "ja" ? "性格" : "Personality",
+              specialty: currentLang === "ja" ? "専門" : "Specialty",
+              currentBase: currentLang === "ja" ? "活動拠点" : "Base",
+              fourCharacterIdiom: currentLang === "ja" ? "四字熟語" : "Idiom"
           };
           return labels[key] || key;
       }
@@ -762,7 +1394,7 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
       function createGalleryItem(nft) {
           const item = document.createElement('div');
           item.className = 'gallery-item';
-          item.dataset.number = `#${String(nft.id).padStart(4, '0')}`;
+          item.dataset.number = "#" + String(nft.id).padStart(4, '0');
           item.dataset.title = nft.title;
           const numberDiv = document.createElement('div');
           numberDiv.className = 'gallery-item-number';
@@ -780,54 +1412,6 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
               openModal(nft);
           });
           return item;
-      }
-      function initializeTabs() {
-          const tabButtons = document.querySelectorAll('.tab-btn');
-          tabButtons.forEach(button => {
-              button.addEventListener('click', function() {
-                  tabButtons.forEach(btn => btn.classList.remove('active'));
-                  this.classList.add('active');
-                  const tabType = this.dataset.tab;
-                  let filteredNFTs = nftData;
-                  switch(tabType) {
-                      case 'recent':
-                          filteredNFTs = nftData.slice(-5);
-                          break;
-                      case 'popular':
-                          // 人気順のロジックがあれば実装
-                          break;
-                      case 'trending':
-                          // トレンド順のロジックがあれば実装
-                          break;
-                      case 'all':
-                      default:
-                          filteredNFTs = nftData;
-                          break;
-                  }
-                  displayNFTs(filteredNFTs);
-              });
-          });
-      }
-      function initializeSearch() {
-          const searchInput = document.querySelector('.search-input');
-          if (!searchInput) return;
-          searchInput.addEventListener('input', function(e) {
-              const searchTerm = e.target.value.toLowerCase();
-              const filteredNFTs = nftData.filter(nft =>
-                  nft.title.toLowerCase().includes(searchTerm) ||
-                  String(nft.id).padStart(4, '0').includes(searchTerm)
-              );
-              displayNFTs(filteredNFTs);
-          });
-      }
-      function displayNFTs(nftsToDisplay = nftData) {
-          const galleryGrid = document.querySelector('.gallery-grid');
-          if (!galleryGrid) return;
-          galleryGrid.innerHTML = '';
-          nftsToDisplay.forEach(nft => {
-              const item = createGalleryItem(nft);
-              galleryGrid.appendChild(item);
-          });
       }
       async function initializeWeb3() {
           if (typeof window.ethereum !== 'undefined') {
@@ -853,7 +1437,7 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
           if (accounts.length === 0) {
               connectBtn.textContent = translations[currentLang].connectWallet;
           } else {
-              const shortAddress = `${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`;
+              const shortAddress = accounts[0].substring(0, 6) + "..." + accounts[0].substring(accounts[0].length - 4);
               connectBtn.textContent = shortAddress;
           }
       }
@@ -872,6 +1456,7 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
           updateLanguage();
       }
       function updateLanguage() {
+          // data-translate属性を持つ要素の更新
           document.querySelectorAll('[data-translate]').forEach(element => {
               const key = element.dataset.translate;
               const translationPath = key.split('.');
@@ -891,6 +1476,18 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
           if (connectBtn && !connectBtn.textContent.includes('0x')) {
               connectBtn.textContent = translations[currentLang].connectWallet;
           }
+          // モーダル内表示中の場合、説明文・詳細情報および特性を更新
+          const modalTitle = document.getElementById('modalTitle');
+          if (modalTitle && modalTitle.textContent) {
+              const nft = nftData.find(nft => nft.title === modalTitle.textContent);
+              if (nft) {
+                  document.getElementById('modalDescription').textContent = nft["description_" + currentLang];
+                  document.getElementById('modalStyle').textContent = nft["style_" + currentLang] || nft.style;
+                  document.getElementById('modalMethod').textContent = nft["method_" + currentLang] || nft.method;
+                  document.getElementById('modalAccessory').textContent = nft["accessory_" + currentLang] || nft.accessory;
+                  updateTraits(nft);
+              }
+          }
       }
       function isMobileDevice() {
           return window.innerWidth <= 768;
@@ -899,7 +1496,8 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
           if (isMobileDevice()) {
               const galleryGrid = document.querySelector('.gallery-grid');
               if (galleryGrid) {
-                  galleryGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                  // モバイル時は1列表示に変更
+                  galleryGrid.style.gridTemplateColumns = '1fr';
               }
               const modalContent = document.querySelector('.nft-modal .modal-content');
               if (modalContent) {
@@ -929,17 +1527,15 @@ possessing the inherited technique of "shibori" dyeing passed down through gener
           images.forEach(img => imageObserver.observe(img));
       }
       function handleError(error, context) {
-          console.error(`Error in ${context}:`, error);
+          console.error("Error in " + context + ":", error);
           const errorContainer = document.querySelector('.error-container');
           if (errorContainer) {
-              errorContainer.textContent = `エラーが発生しました: ${error.message}`;
+              errorContainer.textContent = (currentLang === "ja" ? "エラーが発生しました: " : "An error occurred: ") + error.message;
               errorContainer.style.display = 'block';
           }
       }
       try {
           populateGallery();
-          initializeTabs();
-          initializeSearch();
           initializeLanguageToggle();
           initializeWeb3();
           optimizeForMobile();
